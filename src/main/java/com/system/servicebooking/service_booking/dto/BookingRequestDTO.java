@@ -3,31 +3,19 @@ package com.system.servicebooking.service_booking.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDateTime;
+
 public class BookingRequestDTO {
-    @NotBlank
-    private String userId;
-    @NotBlank
-    private String providerId;
+
+
     @NotBlank
     private String serviceId;
     @NotNull
-    private String scheduledTime;
+    private LocalDateTime scheduledTime;
 
-    public String getUserId() {
-        return userId;
-    }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
-    public String getProviderId() {
-        return providerId;
-    }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
 
     public String getServiceId() {
         return serviceId;
@@ -37,11 +25,11 @@ public class BookingRequestDTO {
         this.serviceId = serviceId;
     }
 
-    public String getScheduledTime() {
+    public LocalDateTime getScheduledTime() {
         return scheduledTime;
     }
 
-    public void setScheduledTime(String scheduledTime) {
+    public void setScheduledTime(LocalDateTime scheduledTime) {
         this.scheduledTime = scheduledTime;
     }
 }

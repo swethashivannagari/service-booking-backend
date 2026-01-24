@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Document
@@ -16,11 +18,12 @@ public class Booking {
     String userId;
     String providerId;
     String serviceId;
-    String scheduledTime;
+    LocalDateTime scheduledTime;
     BookingStatus status;
     String createdAt;
+    private String idempotencyKey;
 
-    public Booking(String id, String userId, String providerId, String serviceId, String scheduledTime, BookingStatus status, String createdAt) {
+    public Booking(String id, String userId, String providerId, String serviceId, LocalDateTime scheduledTime, BookingStatus status, String createdAt) {
         this.id = id;
         this.userId = userId;
         this.providerId = providerId;
@@ -28,6 +31,14 @@ public class Booking {
         this.scheduledTime = scheduledTime;
         this.status = status;
         this.createdAt = createdAt;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
     public String getId() {
@@ -62,11 +73,11 @@ public class Booking {
         this.serviceId = serviceId;
     }
 
-    public String getScheduledTime() {
+    public LocalDateTime getScheduledTime() {
         return scheduledTime;
     }
 
-    public void setScheduledTime(String scheduledTime) {
+    public void setScheduledTime(LocalDateTime scheduledTime) {
         this.scheduledTime = scheduledTime;
     }
 

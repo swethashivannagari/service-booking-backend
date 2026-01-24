@@ -24,7 +24,7 @@ public class ServiceController {
     @Autowired
     private ServicesService servicesService;
 
-    @PreAuthorize("hasRole('PROVIDER','ADMIN)")
+    @PreAuthorize("hasAnyRole('PROVIDER','ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<ServiceResponseDTO>> createService(@Valid @RequestBody ServiceRequestDTO service) {
         ServiceResponseDTO createdService = servicesService.createService(service);

@@ -1,9 +1,11 @@
 package com.system.servicebooking.service_booking.service;
 
+import com.system.servicebooking.service_booking.common.Helper;
 import com.system.servicebooking.service_booking.dto.ServiceRequestDTO;
 import com.system.servicebooking.service_booking.dto.ServiceResponseDTO;
 import com.system.servicebooking.service_booking.enums.BookingStatus;
 import com.system.servicebooking.service_booking.exception.ResourceNotFoundException;
+import com.system.servicebooking.service_booking.exception.UnauthorizedActionException;
 import com.system.servicebooking.service_booking.mapper.ServiceMapper;
 import com.system.servicebooking.service_booking.model.Booking;
 import com.system.servicebooking.service_booking.model.Service;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +27,13 @@ public class ServicesService {
     @Autowired
     ServiceRepository serviceRepository;
 
+    @Autowired
+    AuditService auditService;
+
+    @Autowired
+    Helper helper;
+
+    @Autowired
     ServiceMapper serviceMapper;
 
     public ServiceResponseDTO createService(ServiceRequestDTO service) {
@@ -56,9 +66,15 @@ public class ServicesService {
     }
 
     public void deleteService(String serviceId){
-       Service actualService=serviceRepository.findById(serviceId).orElseThrow(()->new ResourceNotFoundException("Service not found"));
 
-       serviceRepository.delete(actualService);
+       Service actualService=serviceRepository.findByIdAndIsDeletedFalse(serviceId)
+               .orElseThrow(()->new ResourceNotFoundException("Service not found"));
+        actualService.setDeleted(true);
+        actualService.setDeleteAt(LocalDateTime.now());
+        serviceRepository.save(actualService);
+        auditService.log("SERVICE",serviceId,"SOFT_DELETE", helper.getCurrentUserId(), "ACTIVE","DELETED");
+
+
     }
     
     public Page<ServiceResponseDTO> getAllServices(int page,int size){

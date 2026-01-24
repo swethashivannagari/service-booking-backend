@@ -25,6 +25,24 @@ public class User {
     String email;
     String phone;
     UsersRole role;
+    private boolean deleted=false;
+    private LocalDateTime deleteAt;
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public LocalDateTime getDeleteAt() {
+        return deleteAt;
+    }
+
+    public void setDeleteAt(LocalDateTime deleteAt) {
+        this.deleteAt = deleteAt;
+    }
 
     public String getId() {
         return id;

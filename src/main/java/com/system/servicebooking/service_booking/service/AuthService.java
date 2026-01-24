@@ -6,6 +6,7 @@ import com.system.servicebooking.service_booking.dto.LoginResponseDTO;
 import com.system.servicebooking.service_booking.dto.RegisterRequest;
 import com.system.servicebooking.service_booking.dto.UserResponseDTO;
 import com.system.servicebooking.service_booking.exception.InvalidBookingStateException;
+import com.system.servicebooking.service_booking.exception.UnauthorizedActionException;
 import com.system.servicebooking.service_booking.exception.UserAlreadyExistsException;
 import com.system.servicebooking.service_booking.mapper.BookingMapper;
 import com.system.servicebooking.service_booking.mapper.UserMapper;
@@ -37,7 +38,7 @@ public class AuthService {
     }
 
     public UserResponseDTO register(RegisterRequest request){
-        if(userRepository.findByEmail(request.getEmail()).isPresent()){
+        if(userRepository.findByEmailAndDeletedFalse(request.getEmail()).isPresent()){
             throw new UserAlreadyExistsException("User already present!!");
         }
 
@@ -48,8 +49,10 @@ public class AuthService {
     }
 
     public LoginResponseDTO login(LoginRequestDTO request){
-        User user=userRepository.findByEmail(request.getEmail()).orElseThrow(()->new InvalidBookingStateException("Invalid credentials"));
+        User user=userRepository.findByEmailAndDeletedFalse(request.getEmail()).orElseThrow(()->new InvalidBookingStateException("Invalid credentials"));
 
+        if(user.isDeleted())
+            throw new UnauthorizedActionException("Account is deactivated");
         if(!passwordEncoder.matches(request.getPassword(),user.getPassword())){
             throw new InvalidBookingStateException("Invalid password");
         }

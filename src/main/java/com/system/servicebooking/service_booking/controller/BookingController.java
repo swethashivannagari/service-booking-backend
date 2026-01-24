@@ -42,7 +42,7 @@ public class BookingController {
 
     }
 
-    @PreAuthorize("hasRole('PROVIDER','ADMIN')")
+    @PreAuthorize("hasAnyRole('PROVIDER','ADMIN')")
     @GetMapping("/provider")
     public ResponseEntity<ApiResponse<Page<BookingResponseDTO>>> getBookingsByProviderId(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10")int size){
         Page<BookingResponseDTO> bookings=bookingService.getBookingsByProviderId(page,size);
@@ -60,8 +60,8 @@ public class BookingController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(@Valid  @RequestBody BookingRequestDTO booking){
-        BookingResponseDTO savedBooking = bookingService.createBooking(booking);
+    public ResponseEntity<ApiResponse<BookingResponseDTO>> createBooking(@RequestHeader String idempotencyKey,@Valid  @RequestBody BookingRequestDTO booking){
+        BookingResponseDTO savedBooking = bookingService.createBooking(booking,idempotencyKey);
         ApiResponse<BookingResponseDTO> response = new ApiResponse<>(true,"Booking created successfully",savedBooking);
         return ResponseEntity.ok(response);
     }

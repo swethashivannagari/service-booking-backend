@@ -12,6 +12,7 @@ import com.system.servicebooking.service_booking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,6 +21,9 @@ import java.util.stream.Collectors;
 public class UserService {
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    AuditService auditService;
 
     @Autowired
     Helper helper;
@@ -62,13 +66,18 @@ public class UserService {
     public boolean deleteUser(String id) {
         String tokenUserId=helper.getCurrentUserId();
         if(!helper.isAdmin() && !id.equals(tokenUserId))
-            throw new UnauthorizedActionException("You can only modify your profile");
+            throw new UnauthorizedActionException("Only admin can delete users");
         User user=userRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("User not found"));
+        user.setDeleted(true);
+        user.setDeleteAt(LocalDateTime.now());
+        userRepository.save(user);
+        auditService.log("USER",user.getId(),"SOFT_DELETE", helper.getCurrentUserId(), "ACTIVE","DELETED");
+        return true;
 
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return true;
-        }
-        return false;
+//        if (userRepository.existsById(id)) {
+//            userRepository.deleteById(id);
+//            return true;
+//        }
+//        return false;
     }
 }

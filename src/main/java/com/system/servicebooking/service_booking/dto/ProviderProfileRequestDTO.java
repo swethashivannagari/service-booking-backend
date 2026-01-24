@@ -9,8 +9,7 @@ import java.util.List;
 
 
 public class ProviderProfileRequestDTO {
-    @NotBlank
-    String userId;
+
     List<String> servicesOffered;
     @NotNull
     int experience;
@@ -19,13 +18,7 @@ public class ProviderProfileRequestDTO {
     @NotNull
     String location;
 
-    public String getUserId() {
-        return userId;
-    }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     public List<String> getServicesOffered() {
         return servicesOffered;

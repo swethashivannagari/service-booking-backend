@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +25,7 @@ public class ProviderProfileController {
     ProviderProfileService providerProfileService;
 
 
+    @PreAuthorize("hasRole('PROVIDER')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProviderProfileResponseDTO>> createProfile(@Valid @RequestBody ProviderProfileRequestDTO profile){
        ProviderProfileResponseDTO profileResponse= providerProfileService.createProfile(profile);
@@ -41,6 +43,7 @@ public class ProviderProfileController {
 
 
 
+    @PreAuthorize("hasAnyRole('PROVIDER','ADMIN')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<ProviderProfileResponseDTO>> getProviderProfileByUserId(@PathVariable String userId){
         ProviderProfileResponseDTO profile= providerProfileService.getProfileByUserId(userId);
@@ -48,6 +51,7 @@ public class ProviderProfileController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('PROVIDER')")
     @PutMapping("/{providerId}")
     public ResponseEntity<ApiResponse<ProviderProfileResponseDTO>> updateProfile(
             @PathVariable String providerId,

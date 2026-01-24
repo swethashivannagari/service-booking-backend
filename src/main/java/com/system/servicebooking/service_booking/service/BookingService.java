@@ -9,7 +9,11 @@ import com.system.servicebooking.service_booking.exception.ResourceNotFoundExcep
 import com.system.servicebooking.service_booking.exception.UnauthorizedActionException;
 import com.system.servicebooking.service_booking.mapper.BookingMapper;
 import com.system.servicebooking.service_booking.model.Booking;
+import com.system.servicebooking.service_booking.model.ProviderProfile;
+import com.system.servicebooking.service_booking.model.User;
 import com.system.servicebooking.service_booking.repository.BookingRepository;
+import com.system.servicebooking.service_booking.repository.ProviderProfileRepository;
+import com.system.servicebooking.service_booking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,14 +35,50 @@ public class BookingService {
     BookingRepository bookingRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    ProviderProfileRepository providerProfileRepository;
+
+    @Autowired
     BookingMapper mapper;
 
     @Autowired
     Helper helper;
 
-    public BookingResponseDTO createBooking(BookingRequestDTO bookingDTO){
+    public BookingResponseDTO createBooking(BookingRequestDTO bookingDTO,String idempotencyKey){
+        if (idempotencyKey.isBlank() || idempotencyKey==null){
+            throw new UnauthorizedActionException("Idempotency key header is required");
+        }
+        validateSlot(bookingDTO.getScheduledTime());
+        Optional<Booking> existing=bookingRepository.findByIdempotencyKey(idempotencyKey);
+
+        if (existing.isPresent()){
+            return mapper.toResponseDTO(existing.get());
+        }
+        String userId=helper.getCurrentUserId();
+        List<ProviderProfile> providers= providerProfileRepository.findByServicesOfferedContaining(bookingDTO.getServiceId());
+        ProviderProfile assignedProvider=null;
+        for (ProviderProfile profile:providers){
+            User providerUser=userRepository.findById(profile.getUserId()).orElseThrow(()->new ResourceNotFoundException("Provider user not found"));
+            if(providerUser.isDeleted())
+                continue;
+            boolean booked=bookingRepository.existsByProviderIdAndScheduledTimeAndStatusIn(profile.getUserId(),bookingDTO.getScheduledTime(),List.of(REQUESTED,ACCEPTED));
+            if (!booked){
+                assignedProvider=profile;
+                break;
+            }
+
+        }
+        if (assignedProvider==null){
+            throw new ResourceNotFoundException("No provider available at selected slot");
+        }
         Booking booking=mapper.toEntity(bookingDTO);
+
+        booking.setProviderId(assignedProvider.getUserId());
         booking.setStatus(REQUESTED);
+        booking.setUserId(userId);
+        booking.setIdempotencyKey(idempotencyKey);
         bookingRepository.save(booking);
         return mapper.toResponseDTO(booking);
     }
@@ -120,6 +161,12 @@ public class BookingService {
         bookingRepository.save(booking);
         return mapper.toResponseDTO(booking);
 
+    }
+
+    private void validateSlot(LocalDateTime time){
+        if(time.getMinute()!=0 || time.getSecond()!=0){
+            throw new UnauthorizedActionException("Bookings must start at the beginning of the hor(e.g:10.00,11:00)");
+        }
     }
 
 
