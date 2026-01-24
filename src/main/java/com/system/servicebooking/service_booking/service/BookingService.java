@@ -1,5 +1,6 @@
 package com.system.servicebooking.service_booking.service;
 
+import com.system.servicebooking.service_booking.common.BookingStatusRules;
 import com.system.servicebooking.service_booking.common.Helper;
 import com.system.servicebooking.service_booking.dto.BookingRequestDTO;
 import com.system.servicebooking.service_booking.dto.BookingResponseDTO;
@@ -45,6 +46,8 @@ public class BookingService {
 
     @Autowired
     Helper helper;
+
+
 
     public BookingResponseDTO createBooking(BookingRequestDTO bookingDTO,String idempotencyKey){
         if (idempotencyKey.isBlank() || idempotencyKey==null){
@@ -98,7 +101,7 @@ public class BookingService {
       if(!booking.getProviderId().equals(loggedProviderToken)){
           throw new UnauthorizedActionException("not your booking!");
       }
-      if (booking.getStatus()!=REQUESTED){
+        if (!BookingStatusRules.canTransition(booking.getStatus(),ACCEPTED){
           throw new InvalidBookingStateException("Only Requested bookings can be accepted");
       }
       booking.setStatus(ACCEPTED);
@@ -112,7 +115,7 @@ public class BookingService {
         if(!booking.getProviderId().equals(loggedProviderToken)){
             throw new UnauthorizedActionException("not your booking!");
         }
-        if (booking.getStatus()!=ACCEPTED){
+        if (!BookingStatusRules.canTransition(booking.getStatus(),COMPLETED)){
             throw new InvalidBookingStateException("Only Accepted bookings can be completed");
         }
         booking.setStatus(COMPLETED);
@@ -154,7 +157,8 @@ public class BookingService {
         if(!booking.getUserId().equals(loggedProviderToken)){
             throw new UnauthorizedActionException("not your booking!");
         }
-        if (booking.getStatus()==COMPLETED){
+
+        if (!BookingStatusRules.canTransition(booking.getStatus(),CANCELLED)){
             throw new InvalidBookingStateException("Completed Bookings cannot be cancelled");
         }
         booking.setStatus(CANCELLED);
@@ -166,6 +170,9 @@ public class BookingService {
     private void validateSlot(LocalDateTime time){
         if(time.getMinute()!=0 || time.getSecond()!=0){
             throw new UnauthorizedActionException("Bookings must start at the beginning of the hor(e.g:10.00,11:00)");
+        }
+        if (time.isBefore(LocalDateTime.now())){
+            throw new UnauthorizedActionException("Scheduled time must be in future");
         }
     }
 
