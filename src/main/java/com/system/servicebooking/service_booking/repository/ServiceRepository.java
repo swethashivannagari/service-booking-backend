@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ServiceRepository extends MongoRepository<Service,String>
 {
-    public List<Service> findByProviderId(String providerId);
+   // public List<Service> findByProviderId(String providerId);
     public Page<Service>findAll(Pageable pageable);
     Optional<Service> findByIdAndIsDeletedFalse(String id);
 }

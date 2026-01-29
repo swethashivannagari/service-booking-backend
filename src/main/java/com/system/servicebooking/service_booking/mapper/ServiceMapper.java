@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ServiceMapper {
-    @Mapping(target = "active",constant = "Active")
+
     Service toEntity(ServiceRequestDTO dto);
     ServiceResponseDTO toResponseDTO(Service service);
 

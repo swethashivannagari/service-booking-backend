@@ -19,9 +19,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    private static final List<String> PUBLIC_PATHS = List.of(
+            "/auth",
+            "/api/services"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException{
+        String path = request.getServletPath();
+
+        // ✅ 1. SKIP JWT CHECK FOR PUBLIC ENDPOINTS
+        boolean isPublicPath = PUBLIC_PATHS.stream()
+                .anyMatch(path::startsWith);
+
+        if (isPublicPath) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String authHeader=request.getHeader("Authorization");
         if(authHeader==null || !authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);

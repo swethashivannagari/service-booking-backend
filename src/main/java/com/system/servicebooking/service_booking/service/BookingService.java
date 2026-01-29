@@ -14,13 +14,15 @@ import com.system.servicebooking.service_booking.model.ProviderProfile;
 import com.system.servicebooking.service_booking.model.User;
 import com.system.servicebooking.service_booking.repository.BookingRepository;
 import com.system.servicebooking.service_booking.repository.ProviderProfileRepository;
+import com.system.servicebooking.service_booking.repository.ServiceRepository;
 import com.system.servicebooking.service_booking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
+import com.system.servicebooking.service_booking.model.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.system.servicebooking.service_booking.enums.BookingStatus.*;
 
-@Service
+@org.springframework.stereotype.Service
 public class BookingService {
 
     @Autowired
@@ -40,6 +42,9 @@ public class BookingService {
 
     @Autowired
     ProviderProfileRepository providerProfileRepository;
+
+    @Autowired
+    ServiceRepository serviceRepository;
 
     @Autowired
     BookingMapper mapper;
@@ -101,7 +106,7 @@ public class BookingService {
       if(!booking.getProviderId().equals(loggedProviderToken)){
           throw new UnauthorizedActionException("not your booking!");
       }
-        if (!BookingStatusRules.canTransition(booking.getStatus(),ACCEPTED){
+        if (!BookingStatusRules.canTransition(booking.getStatus(),ACCEPTED)){
           throw new InvalidBookingStateException("Only Requested bookings can be accepted");
       }
       booking.setStatus(ACCEPTED);
@@ -128,14 +133,33 @@ public class BookingService {
         String userId=helper.getCurrentUserId();
        PageRequest pageable=PageRequest.of(page,size);
         Page<Booking> bookings= bookingRepository.findByUserId(userId,pageable);
-        return bookings.map(mapper::toResponseDTO);
+
+       Page<BookingResponseDTO> responseBookings= bookings.map(mapper::toResponseDTO);
+       responseBookings.getContent().forEach(booking ->{
+           Service service= serviceRepository.findById(booking.getServiceId())
+                   .orElseThrow(()->new ResourceNotFoundException("Provider not found"));
+           User provider = userRepository.findById(booking.getProviderId())
+                   .orElseThrow(()->new ResourceNotFoundException("provider not found"));
+           booking.setServiceName(service.getName());
+           booking.setProviderName(provider.getName());
+       });
+       return responseBookings;
     }
 
     public Page<BookingResponseDTO> getBookingsByProviderId(int page, int size){
         String providerId=helper.getCurrentUserId();
         PageRequest pageable=PageRequest.of(page,size);
         Page<Booking> bookings= bookingRepository.findByProviderId(providerId,pageable);
-        return bookings.map(mapper::toResponseDTO);
+        Page<BookingResponseDTO> responseBookings= bookings.map(mapper::toResponseDTO);
+        responseBookings.getContent().forEach(booking ->{
+            Service service= serviceRepository.findById(booking.getServiceId())
+                    .orElseThrow(()->new ResourceNotFoundException("Provider not found"));
+            User provider = userRepository.findById(booking.getProviderId())
+                    .orElseThrow(()->new ResourceNotFoundException("provider not found"));
+            booking.setServiceName(service.getName());
+            booking.setProviderName(provider.getName());
+        });
+        return responseBookings;
     }
 
     public List<BookingResponseDTO> getBookingsByStatus(BookingStatus status){

@@ -17,8 +17,6 @@ public class Service {
     String description;
     double basePrice;
     String category;
-    String providerId;
-    String active;
     private boolean isDeleted=false;
     private LocalDateTime deleteAt;
 
@@ -78,21 +76,7 @@ public class Service {
         this.category = category;
     }
 
-    public String getProviderId() {
-        return providerId;
-    }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getActive() {
-        return active;
-    }
-
-    public void setActive(String active) {
-        this.active = active;
-    }
 
 
 }

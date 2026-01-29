@@ -46,10 +46,10 @@ public class ServicesService {
         return serviceMapper.toResponseDTO(service);
     }
 
-    public List<ServiceResponseDTO> getServiceByProviderId(String providerId){
-        List<Service> services= serviceRepository.findByProviderId(providerId);
-        return services.stream().map(serviceMapper::toResponseDTO).collect(Collectors.toList());
-    }
+//    public List<ServiceResponseDTO> getServiceByProviderId(String providerId){
+//        List<Service> services= serviceRepository.findByProviderId(providerId);
+//        return services.stream().map(serviceMapper::toResponseDTO).collect(Collectors.toList());
+//    }
 
     public ServiceResponseDTO updateService(String serviceId, ServiceRequestDTO newService){
         Service oldService=serviceRepository.findById(serviceId).orElseThrow(()->new ResourceNotFoundException("service not found"));

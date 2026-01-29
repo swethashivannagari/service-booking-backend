@@ -11,6 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -22,14 +26,16 @@ public class SecurityConfig {
         this.jwtFilter=jwtFilter;
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**","/services","/services/**")
+                        .requestMatchers("/auth/**","/api/services/**")
                         .permitAll()
                         //.anyRequest().permitAll());
                         .anyRequest().authenticated())

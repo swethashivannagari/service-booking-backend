@@ -11,7 +11,7 @@ public class ServiceRequestDTO {
     @NotNull
     double basePrice;
     String category;
-    String providerId;
+
 
     public String getName() {
         return name;
@@ -45,11 +45,5 @@ public class ServiceRequestDTO {
         this.category = category;
     }
 
-    public String getProviderId() {
-        return providerId;
-    }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
 }

@@ -49,13 +49,13 @@ public class ServiceController {
     }
 
 
-    // 3️⃣ Get services by providerId
-    @GetMapping("/provider/{providerId}")
-    public ResponseEntity<ApiResponse<List<ServiceResponseDTO>>> getServiceByProviderId(@PathVariable String providerId) {
-        List<ServiceResponseDTO> service = servicesService.getServiceByProviderId(providerId);
-        ApiResponse<List<ServiceResponseDTO>> response= new ApiResponse<>(true,"fetched services successfully",service);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    // 3️⃣ Get services by providerId
+//    @GetMapping("/provider/{providerId}")
+//    public ResponseEntity<ApiResponse<List<ServiceResponseDTO>>> getServiceByProviderId(@PathVariable String providerId) {
+//        List<ServiceResponseDTO> service = servicesService.getServiceByProviderId(providerId);
+//        ApiResponse<List<ServiceResponseDTO>> response= new ApiResponse<>(true,"fetched services successfully",service);
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
     // 4️⃣ Update service
     @PutMapping("/{serviceId}")
